@@ -1,7 +1,8 @@
 import pygame
 from pygame.sprite import Sprite
-class Enemy(Sprite):
-    def __init__(self):
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self,x,y):
+        super().__init__()
         self.enemy_image = pygame.image.load("images/Sprites/enemy_soldier.png")
         self.enemy_hurt = pygame.image.load("images/Sprites/enemy_soldier_hurt.png")
         self.resized_enemy_hurt = pygame.transform.scale(self.enemy_hurt,(100,100))
@@ -9,15 +10,26 @@ class Enemy(Sprite):
         self.rect = self.resized_enemy_image.get_rect()
         self.velx = 1
         self.vely = 0
-        self.rect.x = 600
-        self.rect.y = 480
+        self.rect.x = x
+        self.rect.y = y
         self.gravity = 0.5
         self.hurt = False
         self.launched = False
         self.idle = True
+        self.health = 175
         self.Enemy_rect = pygame.Rect(self.rect.x,self.rect.y,100,100)
-
-    
+        self.detect_player = pygame.Rect(self.rect.x,self.rect.y,350,350)
+    def _yanked_left(self):
+         self.rect.x -= self.velx 
+         self.Enemy_rect.x -= self.velx
+    def _yanked_right(self):
+         self.rect.x += self.velx
+         self.Enemy_rect.x += self.velx
+    def _enemy_hurt(self):
+        self.health -= 1
+    def _check_health(self):
+        if self.health <= 0:
+            self.kill()
     def _knockback_(self):
           if not self.hurt:
             self.hurt = True
@@ -25,7 +37,6 @@ class Enemy(Sprite):
             self.velx = 4.5
             self.rect.x += self.velx
             self.Enemy_rect.x += self.velx
-
     def _launched_(self):
             if not self.launched:  # Only set the launch time once
              self.launched = True
@@ -33,6 +44,7 @@ class Enemy(Sprite):
              self.rect.y -= 150
              self.Enemy_rect.y -= 150
              self.gravity = 0  # Stop gravity initially
+
 
     def _update_movements(self, rects):
            if self.launched:
@@ -42,7 +54,7 @@ class Enemy(Sprite):
               self.gravity = 1  # Resume gravity when not in launched state
 
            if self.hurt:
-             if pygame.time.get_ticks() - self.hurt_start_time >= 250:
+            if pygame.time.get_ticks() - self.hurt_start_time >= 250:
                self.hurt = False
 
            self.vely -= self.gravity

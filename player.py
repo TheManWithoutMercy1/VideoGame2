@@ -10,6 +10,28 @@ class Player(Sprite):
         self.attack_image = pygame.image.load("images/Sprites/punch1.png")
         self.attack2_image = pygame.image.load("images/Sprites/punch2.png")
         self.attack3_image = pygame.image.load("images/Sprites/punch3.png")
+        self.shooter_image = pygame.image.load("images/Sprites/shoot_sprite.png")
+        self.air_kick_image = pygame.image.load("images/Sprites/airkick.png")
+        self.swing_image1 = pygame.image.load("images/Sprites/swing_stance1.png")
+        self.swing_image2 = pygame.image.load("images/Sprites/swing_stance2.png")
+        self.swing_image3 = pygame.image.load("images/Sprites/swing_stance3.png")
+        self.swing_image4 = pygame.image.load("images/Sprites/swing_stance4.png")
+        self.swing_image5 = pygame.image.load("images/Sprites/swing_stance5.png")
+        self.swing_image6 = pygame.image.load("images/Sprites/swing_stance6.png")
+        self.swing_image7 = pygame.image.load("images/Sprites/swing_stance7.png")
+        self.swing_image8 = pygame.image.load("images/Sprites/swing_stance8.png")
+        self.swing_image9 = pygame.image.load("images/Sprites/swing_stance9.png")
+        self.swing_image1 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance1.png"), (100, 100))
+        self.swing_image2 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance2.png"), (100, 100))
+        self.swing_image3 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance3.png"), (100, 100))
+        self.swing_image4 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance4.png"), (100, 100))
+        self.swing_image5 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance5.png"), (100, 100))
+        self.swing_image6 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance6.png"), (100, 100))
+        self.swing_image7 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance7.png"), (100, 100))
+        self.swing_image8 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance8.png"), (100, 100))
+        self.swing_image9 = pygame.transform.scale(pygame.image.load("images/Sprites/swing_stance9.png"), (100, 100))
+        self.resized_air_kick_image = pygame.transform.scale(self.air_kick_image,(100,100))
+        self.resized_shooter_image = pygame.transform.scale(self.shooter_image,(100,100))
         self.uppercut_image = pygame.image.load("images/Sprites/uppercut.png")
         self.resized_uppercut = pygame.transform.scale(self.uppercut_image,(125,125))
         self.air_attack_image = pygame.image.load("images/Sprites/airattack.png")
@@ -95,6 +117,7 @@ class Player(Sprite):
         self.player_rect = pygame.Rect(self.rect.x,self.rect.y,100,100)
         self.attack_count = 0
         self.run_count = 0
+        self.shooting = False
        # self.idle = True
 
     def _update_movement(self, rects):
@@ -116,11 +139,19 @@ class Player(Sprite):
             self.attack_count = 0
         for rect in rects:
             if self.rect.colliderect(rect):
-                if self.vely < 0:  # Falling
-                    self.rect.bottom = rect.top
-                    self.player_rect.bottom = rect.top
-                    self.jumping = False
-                    self.vely = 0
+                if self.vely > 0:  # Jumping upward, hitting the ceiling
+                   self.rect.top = rect.bottom  # Stop at the ceiling
+                   self.player_rect.bottom = rect.bottom  # Ensure player's feet align with the platform
+                   self.jumping = False  # Stop the jumping state
+                   self.vely = 0  # Prevent further upward movement
+                   print("collision overhead!")
+                if self.vely < 0:  # Falling downward, landing on a platform
+                    print("on ground")
+                    self.rect.bottom = rect.top  # Land on the platform
+                    self.player_rect.bottom = rect.top  # Ensure player's feet align with the platform
+                    self.jumping = False  # Stop the jumping state
+                    self.vely = 0  # Reset velocity
+
                     
         if key[pygame.K_w]:
             #shoot webline
@@ -131,12 +162,12 @@ class Player(Sprite):
             print(f"velocity is {self.velx}")
 
         if key[pygame.K_s]:
+            self.shooting = True
             print("shooting web grapple!")
+        else:
+            self.shooting = False
 
-        #if self.velx >= 10.0:
-         #   self.velx = 2.5
-
-        if key[pygame.K_RIGHT]: # right key
+        if key[pygame.K_RIGHT] and not self.swinging: # right key
             print(f"moving right ! {self.rect.x - self.velx}")
             self.running = True
             self.idle = False
@@ -153,8 +184,9 @@ class Player(Sprite):
                 if self.rect.colliderect(rect):
                     self.rect.right = rect.left
                     self.player_rect.right = rect.left
+        
                  
-        elif key[pygame.K_LEFT]: # left key 
+        elif key[pygame.K_LEFT] and not self.swinging: # left key 
             print(f"moving left ! {self.rect.x - self.velx}")
             self.running = True
             self.idle = False
@@ -214,9 +246,13 @@ class Player(Sprite):
         if self.swinging:
             self.resized_image = self.resized_swing_image
 
+
+        if self.shooting:
+            self.resized_image = self.resized_shooter_image
+
+
+
         if self.attacking:
-            if self.jumping:
-                self.resized_image = self.resized_airattack
             if self.facing_right and self.attack_count >= 0:
                self.resized_image = self.resized_attack_image  
             if self.facing_right and self.attack_count >= 20:
