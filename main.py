@@ -1,5 +1,6 @@
 import pygame
 from player import Player
+import random
 from camera import Camera
 from NewYork import create_map
 from Enemies import Enemy
@@ -37,6 +38,7 @@ tile_map = [
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
+    [0 , 0 , 0 , 0 , 0 , 0 , 1 , 1 , 1 ,1 , 1 ,1 , 1],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
@@ -49,10 +51,9 @@ tile_map = [
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
-    [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 1],
-    [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 1],
-    [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 1],
-    [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 1],
+    [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
+    [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
+    [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
     [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,0 , 0 ,0 , 0],
@@ -102,6 +103,8 @@ def _draw_collisions(tile_map):
                                  (rect.x - camera_x, rect.y - camera_y, rect.width, rect.height), 2)
 def _enemy_collisions():
     for enemy in enemies:
+     if player.player_rect.colliderect(enemy.detect_player): 
+          enemy._attack_mode()    
      if player.player_rect.colliderect(enemy.rect):
         if player.attacking:
           print("collision detected!!!!!!!")
@@ -110,7 +113,9 @@ def _enemy_collisions():
         if player.uppercut:
           print("enemy uppercutted!!!")
           enemy._launched_()
-          enemy._enemy_hurt()        
+          enemy._enemy_hurt()
+
+          
 def _web_swing():
     if player.swinging and player.jumping:
         pygame.draw.line(screen, WHITE, (player.rect.x - camera_x, player.rect.y - camera_y), (player.rect.x - camera_x + 3,50), 3)
@@ -159,17 +164,21 @@ while running:
     for enemy in enemies:
       enemy._update_movements(rects)
       enemy._update_sprites()
+     
     # Draw everything AFTER updates
     screen.fill("lightblue")  # Clear screen
     create_map(screen, tile_map, tile_image, tile_size)  # Draw world
     screen.blit(player.resized_image, (player.rect.x - camera_x, player.rect.y))
     for enemy in enemies:
       screen.blit(enemy.resized_enemy_image, (enemy.rect.x - camera_x, enemy.rect.y))
+
    # camera._draw_camera(rects)  # Draw any camera-related effects
     _draw_collisions(tile_map)
     # Draw the enemy rect with the camera offset
-    for enemy in enemies:
-      pygame.draw.rect(screen, (0, 0, 0), (enemy.Enemy_rect.x - camera_x, enemy.Enemy_rect.y, enemy.Enemy_rect.width, enemy.Enemy_rect.height), 2)
+    #for enemy in enemies:
+      #pygame.draw.rect(screen, (0, 0, 0), (enemy.Enemy_rect.x - camera_x, enemy.Enemy_rect.y, enemy.Enemy_rect.width, enemy.Enemy_rect.height), 2)
+      #pygame.draw.rect(screen , (0,0,0) , (enemy.detect_player.x - camera_x,enemy.detect_player.y, enemy.detect_player.width , enemy.detect_player.height), 2)
+     
 
     pygame.draw.rect(screen, (0, 0, 0), (player.player_rect.x - camera_x, player.player_rect.y, player.player_rect.width, player.player_rect.height), 2)
     _web_swing()

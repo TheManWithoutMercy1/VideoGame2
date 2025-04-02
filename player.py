@@ -255,13 +255,13 @@ class Player(Sprite):
         if self.attacking:
             if self.facing_right and self.attack_count >= 0:
                self.resized_image = self.resized_attack_image  
-            if self.facing_right and self.attack_count >= 20:
+            if self.facing_right and self.attack_count >= 15:
                 self.resized_image = self.resized_attack2_image
-            if self.facing_right and self.attack_count >= 40:
+            if self.facing_right and self.attack_count >= 30:
                 self.resized_image = self.resized_attack3_image
-            if self.facing_right and self.attack_count >= 60:
+            if self.facing_right and self.attack_count >= 45:
                 self.resized_image = self.resized_kick_image
-            if self.facing_right and self.attack_count >= 80:
+            if self.facing_right and self.attack_count >= 60:
                 self.resized_image = self.resized_kick_image2
             if self.facing_left:
                 self.resized_image = self.resized_attack_image2
