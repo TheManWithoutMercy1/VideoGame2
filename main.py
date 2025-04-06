@@ -4,7 +4,10 @@ import random
 from camera import Camera
 from NewYork import create_map
 from Enemies import Enemy
+from destructibles import Destructible
 from camera_lock import CameraLock  # Import camera system
+
+
 tile_image = pygame.image.load("images/Sprites/Level Design/Ground.png")
 tile_size = 10
 WHITE = (255, 255, 255)
@@ -74,7 +77,7 @@ screen = pygame.display.set_mode((800,600))
 clock = pygame.time.Clock()
 running = True
 color = (255,0,0)
-player = Player()
+player = Player(screen)
 enemy = Enemy(500,600)
 enemy2 = Enemy(800,600)
 enemy3 = Enemy(1200,600)
@@ -82,6 +85,9 @@ enemies = pygame.sprite.Group()
 enemies.add(enemy)
 enemies.add(enemy2)
 enemies.add(enemy3)
+d = Destructible(100,50,screen)
+destructibles = [d]
+
 
 camera = Camera( player.player_rect, screen ,color)
 rects = []  # Initialize the list once
@@ -154,6 +160,7 @@ def _camera_scroll():
 while running:
     # Handle events first
     for event in pygame.event.get():
+        player._web_zip(event,rects,d)
         if event.type == pygame.QUIT:
             running = False
     # Move the camera BEFORE updating player movement
@@ -161,16 +168,22 @@ while running:
     _enemy_collisions()
     # Move the player after camera has updated
     player._update_movement(rects)
+    
+ 
     for enemy in enemies:
       enemy._update_movements(rects)
       enemy._update_sprites()
-     
-    # Draw everything AFTER updates
+
+    
     screen.fill("lightblue")  # Clear screen
+
     create_map(screen, tile_map, tile_image, tile_size)  # Draw world
+
     screen.blit(player.resized_image, (player.rect.x - camera_x, player.rect.y))
     for enemy in enemies:
       screen.blit(enemy.resized_enemy_image, (enemy.rect.x - camera_x, enemy.rect.y))
+
+    d.draw(camera_x)
 
    # camera._draw_camera(rects)  # Draw any camera-related effects
     _draw_collisions(tile_map)
@@ -183,6 +196,9 @@ while running:
     pygame.draw.rect(screen, (0, 0, 0), (player.player_rect.x - camera_x, player.player_rect.y, player.player_rect.width, player.player_rect.height), 2)
     _web_swing()
     grapple()
+    if player.web_active:
+        pygame.draw.line(screen,"white",(player.player_rect.centerx - camera_x, player.player_rect.centery - camera_y),(player.web_end[0] - camera_x, player.web_end[1]),3)
+
 
     for enemy in enemies:
       enemy._check_health()

@@ -1,11 +1,13 @@
 import pygame
 from pygame.sprite import Sprite
+
 GRAVITY = 3
 WHITE = (255, 255, 255)
 class Player(Sprite):
     #constructor
-    def __init__(self):
+    def __init__(self,screen):
         super().__init__()
+        self.screen = screen
         self.image = pygame.image.load("images/Sprites/player.png")
         self.attack_image = pygame.image.load("images/Sprites/punch1.png")
         self.attack2_image = pygame.image.load("images/Sprites/punch2.png")
@@ -118,6 +120,9 @@ class Player(Sprite):
         self.attack_count = 0
         self.run_count = 0
         self.shooting = False
+        self.on_ground = False
+        self.web_active = False
+        self.web_end = None
        # self.idle = True
 
     def _update_movement(self, rects):
@@ -135,22 +140,25 @@ class Player(Sprite):
         key = pygame.key.get_pressed()
         dx = 0
         dy = 0
+    
         if self.attack_count >= 100:
             self.attack_count = 0
         for rect in rects:
             if self.rect.colliderect(rect):
-                if self.vely > 0:  # Jumping upward, hitting the ceiling
-                   self.rect.top = rect.bottom  # Stop at the ceiling
-                   self.player_rect.bottom = rect.bottom  # Ensure player's feet align with the platform
-                   self.jumping = False  # Stop the jumping state
-                   self.vely = 0  # Prevent further upward movement
-                   print("collision overhead!")
-                if self.vely < 0:  # Falling downward, landing on a platform
-                    print("on ground")
+                if self.vely  < 0:  # Falling downward, landing on a platform
+                    self.on_ground = True
+                
                     self.rect.bottom = rect.top  # Land on the platform
                     self.player_rect.bottom = rect.top  # Ensure player's feet align with the platform
                     self.jumping = False  # Stop the jumping state
                     self.vely = 0  # Reset velocity
+                if self.vely < 0 and not self.on_ground:
+                    self.rect.top = rect.bottom
+                    self.player_rect.top = rect.bottom
+                    self.vely = 0
+
+                
+
 
                     
         if key[pygame.K_w]:
@@ -289,21 +297,32 @@ class Player(Sprite):
                 self.resized_image = self.resized_run_image11
             if self.run_count >= 80:
                 self.run_count = 0
+            
+    def _web_zip(self,event,rects,camera_x,d=None):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            print("mouse click detected")
+            print(pygame.mouse.get_pos())
+            self.check_event(event.pos,rects)
+            d.check_event(event.pos)
 
-          
+    def check_event(self, pos, rects):
+     if self.rect.collidepoint(pos):
+        print("player detected")  
+        print(pygame.mouse.get_pos())    
+
+     for rect in rects:
+        if rect.collidepoint(pos):  
+            print("infrastructure detected at:")
+            print(pygame.mouse.get_pos())
+            web_end = pygame.mouse.get_pos()
+            self.web_line(web_end,self.screen)
+           
+    def web_line(self, web_end, screen):
+            self.web_end = web_end
+            self.web_active = True
+            print(f"Shooting webline from {self.rect.center} to {web_end}")
         
-   
-
-      
-        
 
         
-        
-  
-        
-       
-        
 
-
-
-
+    

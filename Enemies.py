@@ -40,17 +40,13 @@ class Enemy(pygame.sprite.Sprite):
            self._yanked_left()
         else:
            self._yanked_right()
-           
     def _attack_mode(self):
        if not self.attacking and random.random() < 0.5:  # 50% chance to attack
         self.attacking = True
         self.attack_start_time = pygame.time.get_ticks()
         self._move_mode()
-       
-          
-   
     def _enemy_hurt(self):
-        self.health -= 1
+         self.health -= 1
     def _check_health(self):
         if self.health <= 0:
             self.kill()
