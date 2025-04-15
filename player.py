@@ -1,6 +1,5 @@
 import pygame
 from pygame.sprite import Sprite
-
 GRAVITY = 3
 WHITE = (255, 255, 255)
 class Player(Sprite):
@@ -123,6 +122,7 @@ class Player(Sprite):
         self.on_ground = False
         self.web_active = False
         self.web_end = None
+        self.rush = False
        # self.idle = True
 
     def _update_movement(self, rects):
@@ -137,6 +137,7 @@ class Player(Sprite):
         self.rect.y -= self.vely
         self.player_rect.y  -= self.vely
         start_time = pygame.time.get_ticks()
+        global key
         key = pygame.key.get_pressed()
         dx = 0
         dy = 0
@@ -156,11 +157,12 @@ class Player(Sprite):
                     self.rect.top = rect.bottom
                     self.player_rect.top = rect.bottom
                     self.vely = 0
-
+        if key[pygame.K_z]:
+            if self.web_active:
+                self.web_active = False
+            else:
+                self.web_active = True
                 
-
-
-                    
         if key[pygame.K_w]:
             #shoot webline
             self.swinging = True
@@ -302,26 +304,38 @@ class Player(Sprite):
         if event.type == pygame.MOUSEBUTTONDOWN:
             print("mouse click detected")
             print(pygame.mouse.get_pos())
-            self.check_event(event.pos,rects)
-            d.check_event(event.pos)
+            x,y = (pygame.mouse.get_pos())
+            world_pos = (x + camera_x, y)
+            self.check_event(world_pos,rects)
+            d.check_event(world_pos)
 
     def check_event(self, pos, rects):
      if self.rect.collidepoint(pos):
-        print("player detected")  
-        print(pygame.mouse.get_pos())    
+        print("player detected") 
 
      for rect in rects:
         if rect.collidepoint(pos):  
             print("infrastructure detected at:")
-            print(pygame.mouse.get_pos())
-            web_end = pygame.mouse.get_pos()
-            self.web_line(web_end,self.screen)
-           
+            self.web_line(pos,self.screen)
+            web_x,web_y = pos
+            if self.web_active:
+                self.web_rush(web_x,web_y)
+    
+         
+    def web_rush(self,web_x,web_y):
+              print("TESTING!")
+              self.rect.x = web_x
+              self.player_rect.x = web_x
+              self.player_rect.y = web_y
+              self.rect.y = web_y 
+            
     def web_line(self, web_end, screen):
             self.web_end = web_end
             self.web_active = True
             print(f"Shooting webline from {self.rect.center} to {web_end}")
-        
+
+
+   
 
         
 
