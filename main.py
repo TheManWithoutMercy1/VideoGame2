@@ -7,8 +7,10 @@ from Enemies import Enemy
 from destructibles import Destructible
 from camera_lock import CameraLock  # Import camera system
 
-
 tile_image = pygame.image.load("images/Sprites/Level Design/Ground.png")
+health_image = pygame.image.load("images/Sprites/health_bar_img.png")
+health_image_r = pygame.transform.scale(health_image,(140,75))
+
 tile_size = 10
 WHITE = (255, 255, 255)
 tile_map = [
@@ -42,10 +44,6 @@ tile_map = [
     [0]*100,
     [0]*100,
     [0]*100,
-
-
-
-
     [0]*100,
     [0]*100,
     [0]*100,
@@ -91,12 +89,27 @@ enemies.add(enemy3)
 d = Destructible(100,50,screen)
 destructibles = [d]
 
+# Drawing Rectangle
 
 camera = Camera( player.player_rect, screen ,color)
 rects = []  # Initialize the list once
 camera_lock = CameraLock(400, 800)
 camera_x = 0
 camera_y = 0
+
+BLACK = (0,0,0)
+
+def _draw_health_bar():
+   screen.blit(health_image_r, (10,9))
+   pygame.draw.rect(screen, color, pygame.Rect(60, 30, 75, 15))
+   pygame.draw.rect(screen, BLACK, pygame.Rect(60, 30, 75, 15),2)
+  
+def _enemies_defeated():
+    if enemies == 0:
+       print("ENEMIES DEFEATED")
+
+
+
 def _draw_collisions(tile_map):
     global rects  
     rects.clear()  # Clear previous rects to avoid duplication
@@ -169,6 +182,7 @@ while running:
     # Move the camera BEFORE updating player movement
     _camera_scroll()
     _enemy_collisions()
+  
     # Move the player after camera has updated
     player._update_movement(rects)
     
@@ -205,6 +219,11 @@ while running:
 
     for enemy in enemies:
       enemy._check_health()
+      
+    if len(enemies) < 1:
+       print("ALL ENEMIES DEFEATED!!!")
+
+    _draw_health_bar()
     # Refresh the screen
     pygame.display.flip()
     clock.tick(60)  # Keep frame rate at 60 FPS

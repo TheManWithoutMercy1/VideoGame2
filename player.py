@@ -13,6 +13,7 @@ class Player(Sprite):
         self.attack3_image = pygame.image.load("images/Sprites/punch3.png")
         self.shooter_image = pygame.image.load("images/Sprites/shoot_sprite.png")
         self.air_kick_image = pygame.image.load("images/Sprites/airkick.png")
+        health_image = pygame.image.load("images/Sprites/health_bar_img.png")
         self.swing_image1 = pygame.image.load("images/Sprites/swing_stance1.png")
         self.swing_image2 = pygame.image.load("images/Sprites/swing_stance2.png")
         self.swing_image3 = pygame.image.load("images/Sprites/swing_stance3.png")
