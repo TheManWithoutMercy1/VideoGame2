@@ -6,6 +6,9 @@ from NewYork import create_map
 from Enemies import Enemy
 from destructibles import Destructible
 from camera_lock import CameraLock  # Import camera system
+from csv_converted import convert_csv
+from layout import tile_map_lvl2
+from city_textures import road_image_resized
 
 tile_image = pygame.image.load("images/Sprites/Level Design/Ground.png")
 health_image = pygame.image.load("images/Sprites/health_bar_img.png")
@@ -16,17 +19,17 @@ WHITE = (255, 255, 255)
 tile_map = [
     [0]*100 for _ in range(10)
 ] + [
-    [0]*20 + [1]*5 + [0]*75,               # small left platform
-    [0]*50 + [1]*10 + [0]*40,              # middle platform
-    [0]*80 + [1]*5 + [0]*15,               # right floating platform
-    [0]*10 + [1] + [0]*88 + [1],           # two vertical pillars
-    [0]*10 + [1] + [0]*88 + [1],
-    [0]*10 + [1] + [0]*88 + [1],
-    [0]*10 + [1] + [0]*88 + [1],
-    [0]*10 + [1]*10 + [0]*80,              # lower platform
-    [0]*30 + [1]*5 + [0]*65,               # jumpable block
-    [0]*60 + [1]*5 + [0]*35,               # jumpable block
-    [0]*90 + [1]*10,                       # far right wall ledge
+    [0]*20 + [2]*5 + [0]*75,               
+    [0]*50 + [2]*10 + [0]*40,             
+    [0]*80 + [2]*5 + [0]*15,              
+    [0]*10 + [2] + [0]*88 + [2],           
+    [0]*10 + [2] + [0]*88 + [2],
+    [0]*10 + [2] + [0]*88 + [2],
+    [0]*10 + [2] + [0]*88 + [2],
+    [0]*10 + [2]*10 + [0]*80,            
+    [0]*30 + [2]*5 + [0]*65,               
+    [0]*60 + [2]*5 + [0]*35,               
+    [0]*90 + [2]*10,                      
     [0]*100,
     [0]*100,
     [0]*100,
@@ -35,7 +38,6 @@ tile_map = [
     [0]*100,
     [0]*100,
     [0]*100,
-
     [0]*100,
     [0]*100,
     [0]*100,
@@ -72,44 +74,73 @@ tile_map = [
     [1]*1000                                 # solid ground
 ]
 
-#pygame setup
+
 pygame.init()
 screen = pygame.display.set_mode((800,600))
 clock = pygame.time.Clock()
 running = True
 color = (255,0,0)
 player = Player(screen)
-enemy = Enemy(500,600)
-enemy2 = Enemy(800,600)
-enemy3 = Enemy(1200,600)
+#enemy = Enemy(500,600)
+#enemy2 = Enemy(800,600)
+#enemy3 = Enemy(1200,600)
 enemies = pygame.sprite.Group()
-enemies.add(enemy)
-enemies.add(enemy2)
-enemies.add(enemy3)
+#enemies.add(enemy)
+#enemies.add(enemy2)
+#enemies.add(enemy3)
 d = Destructible(100,50,screen)
 destructibles = [d]
-
-# Drawing Rectangle
-
+white = (0,0,0)
+green = (0, 255, 0)
+blue = (0, 0, 128)
+font = pygame.font.Font('freesansbold.ttf', 32)
+text = font.render('Level Complete!', True, green, white)
+textRect = text.get_rect()
+textRect.center = (800// 2, 600 // 2)
 camera = Camera( player.player_rect, screen ,color)
-rects = []  # Initialize the list once
+rects = []  
 camera_lock = CameraLock(400, 800)
 camera_x = 0
 camera_y = 0
 
 BLACK = (0,0,0)
+level_complete = False
+level_complete_time = 0
+
+current_level = 0
+tile_maps = [tile_map, tile_map_lvl2]
+tile_map = tile_maps[current_level]  # Initialize with the first level
+message_timer = 0
+message_duration = 3000  # 3 seconds
 
 def _draw_health_bar():
    screen.blit(health_image_r, (10,9))
    pygame.draw.rect(screen, color, pygame.Rect(60, 30, 75, 15))
    pygame.draw.rect(screen, BLACK, pygame.Rect(60, 30, 75, 15),2)
-  
+
 def _enemies_defeated():
-    if enemies == 0:
-       print("ENEMIES DEFEATED")
+    global tile_map, current_level, enemies
+    if len(enemies) < 1:
+        print("ALL ENEMIES DEFEATED!!!")
+        blit_time = pygame.time.get_ticks()
+        screen.blit(text, textRect)
+        if current_level + 1 < len(tile_maps):
+            current_level += 1
+            tile_map = tile_maps[current_level]  
+            _enemy_spawn(tile_map)        
+        else:
+            print("NO MORE LEVELS!")
 
-
-
+def _enemy_spawn(tile_map):
+    global enemies
+    enemies.empty()  
+    if tile_map and isinstance(tile_map[0], list):
+        enemy1 = Enemy(500, 600)
+        enemy2 = Enemy(800, 600)
+        enemy3 = Enemy(1200, 600)
+        enemies.add(enemy1, enemy2, enemy3)
+        print("Enemies spawned.")
+     
 def _draw_collisions(tile_map):
     global rects  
     rects.clear()  # Clear previous rects to avoid duplication
@@ -119,14 +150,15 @@ def _draw_collisions(tile_map):
                 x = col_index * tile_size  # Store world position (no camera offset)
                 y = row_index * tile_size
                 rect = pygame.Rect(x, y, 40, 40)  # Store world position in rects
-                rects.append(rect)  # Store for collision detection
+                screen.blit(road_image_resized,( rect.x - camera_x, rect.y))
+                rects.append(rect)  # Store for collision detection        
                 # Apply camera offset when drawing
                 pygame.draw.rect(screen, color, 
                                  (rect.x - camera_x, rect.y - camera_y, rect.width, rect.height), 2)
 def _enemy_collisions():
     for enemy in enemies:
      if player.player_rect.colliderect(enemy.detect_player): 
-          enemy._attack_mode()    
+        enemy._attack_mode()    
      if player.player_rect.colliderect(enemy.rect):
         if player.attacking:
           print("collision detected!!!!!!!")
@@ -136,8 +168,10 @@ def _enemy_collisions():
           print("enemy uppercutted!!!")
           enemy._launched_()
           enemy._enemy_hurt()
+        if enemy.attacking:
+          print("enemy attacking")
+          player.player_hurt()
 
-          
 def _web_swing():
     if player.swinging and player.jumping:
         pygame.draw.line(screen, WHITE, (player.rect.x - camera_x, player.rect.y - camera_y), (player.rect.x - camera_x + 3,50), 3)
@@ -145,7 +179,7 @@ def _web_swing():
         # 
 def grapple():
     if player.shooting and enemies:
-        closest_enemy = min(enemies, key=lambda enemy: abs(player.rect.x - enemy.rect.x))
+        closest_enemy =   min(enemies, key=lambda enemy: abs(player.rect.x - enemy.rect.x))
         distance = abs(player.rect.x - enemy.rect.x)  # Correct distance calculation
 
         web_length = 600  # Length of the web
@@ -216,12 +250,11 @@ while running:
     if player.web_active:
         pygame.draw.line(screen,"white",(player.player_rect.centerx - camera_x, player.player_rect.centery - camera_y),(player.web_end[0] - camera_x, player.web_end[1]),3)
 
-
+   
     for enemy in enemies:
       enemy._check_health()
       
-    if len(enemies) < 1:
-       print("ALL ENEMIES DEFEATED!!!")
+    _enemies_defeated()
 
     _draw_health_bar()
     # Refresh the screen

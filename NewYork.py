@@ -54,8 +54,8 @@ def create_map(screen, tile_map, tile_image, tile_size):
         for col_index, tile in enumerate(row):
             x = col_index * tile_size
             y = row_index * tile_size
-            if tile == 1:  # Only draw if the tile is a ground tile
-                screen.blit(tile_image,(x, y))
+            #if tile == 1:  # Only draw if the tle is a ground tile
+               # screen.blit(tile_image,(x -, y))
               #  rect = pygame.Rect(x,y,40,40)
               #  pygame.draw.rect(screen, color, rect, 2)
 

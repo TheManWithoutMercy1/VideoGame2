@@ -12,6 +12,8 @@ class Player(Sprite):
         self.attack2_image = pygame.image.load("images/Sprites/punch2.png")
         self.attack3_image = pygame.image.load("images/Sprites/punch3.png")
         self.shooter_image = pygame.image.load("images/Sprites/shoot_sprite.png")
+        self.spider_hurt = pygame.image.load("images/Sprites/spider_hurt.png")
+        self.spider_hurt_resized = pygame.transform.scale(self.spider_hurt,(100,100))
         self.air_kick_image = pygame.image.load("images/Sprites/airkick.png")
         health_image = pygame.image.load("images/Sprites/health_bar_img.png")
         self.swing_image1 = pygame.image.load("images/Sprites/swing_stance1.png")
@@ -124,6 +126,7 @@ class Player(Sprite):
         self.web_active = False
         self.web_end = None
         self.rush = False
+        self.hurt = False
        # self.idle = True
 
     def _update_movement(self, rects):
@@ -241,7 +244,6 @@ class Player(Sprite):
                 self.jumping = False
             if self.swinging:
                 self.vely = 0
-
         if self.uppercut:
             self.resized_image = self.resized_uppercut
             
@@ -257,11 +259,8 @@ class Player(Sprite):
         if self.swinging:
             self.resized_image = self.resized_swing_image
 
-
         if self.shooting:
             self.resized_image = self.resized_shooter_image
-
-
 
         if self.attacking:
             if self.facing_right and self.attack_count >= 0:
@@ -300,6 +299,14 @@ class Player(Sprite):
                 self.resized_image = self.resized_run_image11
             if self.run_count >= 80:
                 self.run_count = 0
+
+        # Only show hurt sprite if not attacking, jumping, running, swinging, etc.
+        if self.hurt and not (self.attacking or self.jumping or self.running or self.swinging or self.shooting or self.uppercut):
+          self.resized_image = self.spider_hurt_resized
+          if pygame.time.get_ticks() - self.hurt_start_time > 1000:
+             self.hurt = False
+
+
             
     def _web_zip(self,event,rects,camera_x,d=None):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -335,6 +342,10 @@ class Player(Sprite):
             self.web_active = True
             print(f"Shooting webline from {self.rect.center} to {web_end}")
 
+    def player_hurt(self):
+     if not self.hurt:  # Only set hurt once per collision cycle
+        self.hurt = True
+        self.hurt_start_time = pygame.time.get_ticks()
 
    
 
