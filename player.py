@@ -1,10 +1,17 @@
 import pygame
+pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
+pygame.mixer.init() 
 from pygame.sprite import Sprite
 GRAVITY = 3
 WHITE = (255, 255, 255)
+
+#web_sound = pygame.mixer.Sound('Voicy_Spider-Man web shoot sound effect.mp3')
+#jump_sound = pygame.mixer.Sound('jump_05.wav')
+#punch_sound = pygame.mixer.Sound('hard-punch-90179.mp3')
+
 class Player(Sprite):
     #constructor
-    def __init__(self,screen):
+    def __init__(self,screen,x,y):
         super().__init__()
         self.screen = screen
         self.image = pygame.image.load("images/Sprites/player.png")
@@ -107,8 +114,8 @@ class Player(Sprite):
         self.rect = self.resized_image.get_rect()
         self.velx = 1.5
         self.vely = 0
-        self.rect.x = 350
-        self.rect.y = 480
+        self.rect.x = x
+        self.rect.y = y
         self.rect.x += self.velx
         self.rect.y += self.vely
         self.facing_right = True
@@ -173,6 +180,7 @@ class Player(Sprite):
             print("shooting webline!")
 
         if self.swinging:
+            #web_sound.play()
             print(f"velocity is {self.velx}")
 
         if key[pygame.K_s]:
@@ -218,6 +226,7 @@ class Player(Sprite):
         else:
             self.running = False
         if key[pygame.K_d] and not self.attacking:
+            #punch_sound.play()
             self.running = False
             self.attack_count += 1
             print(f"attack count is {self.attack_count}")
@@ -232,6 +241,7 @@ class Player(Sprite):
             self.idle = False
 
         if key[pygame.K_SPACE]:
+            #jump_sound.play()
             print("jump pressed!")#
             self.jumping_start_time = pygame.time.get_ticks()
             self.jumping = True   

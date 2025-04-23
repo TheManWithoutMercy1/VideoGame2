@@ -7,9 +7,9 @@ from Enemies import Enemy
 from destructibles import Destructible
 from camera_lock import CameraLock  # Import camera system
 from csv_converted import convert_csv
-from layout import tile_map_lvl2
+from layout import tile_map_lvl2, tile_map_lvl3
 from city_textures import road_image_resized
-
+from spiderslayer import Spiderslayer
 tile_image = pygame.image.load("images/Sprites/Level Design/Ground.png")
 health_image = pygame.image.load("images/Sprites/health_bar_img.png")
 health_image_r = pygame.transform.scale(health_image,(140,75))
@@ -19,17 +19,7 @@ WHITE = (255, 255, 255)
 tile_map = [
     [0]*100 for _ in range(10)
 ] + [
-    [0]*20 + [2]*5 + [0]*75,               
-    [0]*50 + [2]*10 + [0]*40,             
-    [0]*80 + [2]*5 + [0]*15,              
-    [0]*10 + [2] + [0]*88 + [2],           
-    [0]*10 + [2] + [0]*88 + [2],
-    [0]*10 + [2] + [0]*88 + [2],
-    [0]*10 + [2] + [0]*88 + [2],
-    [0]*10 + [2]*10 + [0]*80,            
-    [0]*30 + [2]*5 + [0]*65,               
-    [0]*60 + [2]*5 + [0]*35,               
-    [0]*90 + [2]*10,                      
+                     
     [0]*100,
     [0]*100,
     [0]*100,
@@ -64,7 +54,6 @@ tile_map = [
     [0]*100,
     [0]*100,
 
-    
     [0]*100,
     [0]*100,
 
@@ -74,13 +63,13 @@ tile_map = [
     [1]*1000                                 # solid ground
 ]
 
-
 pygame.init()
 screen = pygame.display.set_mode((800,600))
 clock = pygame.time.Clock()
 running = True
 color = (255,0,0)
-player = Player(screen)
+player = Player(screen,350,480)
+spiderslayer = Spiderslayer(350,200)
 #enemy = Enemy(500,600)
 #enemy2 = Enemy(800,600)
 #enemy3 = Enemy(1200,600)
@@ -88,6 +77,7 @@ enemies = pygame.sprite.Group()
 #enemies.add(enemy)
 #enemies.add(enemy2)
 #enemies.add(enemy3)
+
 d = Destructible(100,50,screen)
 destructibles = [d]
 white = (0,0,0)
@@ -108,7 +98,7 @@ level_complete = False
 level_complete_time = 0
 
 current_level = 0
-tile_maps = [tile_map, tile_map_lvl2]
+tile_maps = [tile_map, tile_map_lvl2, tile_map_lvl3]
 tile_map = tile_maps[current_level]  # Initialize with the first level
 message_timer = 0
 message_duration = 3000  # 3 seconds
@@ -127,19 +117,22 @@ def _enemies_defeated():
         if current_level + 1 < len(tile_maps):
             current_level += 1
             tile_map = tile_maps[current_level]  
-            _enemy_spawn(tile_map)        
+            _enemy_spawn(tile_map)   
         else:
             print("NO MORE LEVELS!")
 
+
 def _enemy_spawn(tile_map):
     global enemies
-    enemies.empty()  
+    global slayers 
+    enemies.empty()
     if tile_map and isinstance(tile_map[0], list):
         enemy1 = Enemy(500, 600)
         enemy2 = Enemy(800, 600)
         enemy3 = Enemy(1200, 600)
         enemies.add(enemy1, enemy2, enemy3)
         print("Enemies spawned.")
+    
      
 def _draw_collisions(tile_map):
     global rects  
@@ -225,14 +218,17 @@ while running:
       enemy._update_movements(rects)
       enemy._update_sprites()
 
-    
+    spiderslayer.move()
     screen.fill("lightblue")  # Clear screen
 
     create_map(screen, tile_map, tile_image, tile_size)  # Draw world
 
     screen.blit(player.resized_image, (player.rect.x - camera_x, player.rect.y))
+    screen.blit(spiderslayer.image, (spiderslayer.rect.x - camera_x, spiderslayer.rect.y))
     for enemy in enemies:
+      #print("ENEMY CREATED!")
       screen.blit(enemy.resized_enemy_image, (enemy.rect.x - camera_x, enemy.rect.y))
+    
 
     d.draw(camera_x)
 
@@ -247,8 +243,13 @@ while running:
     pygame.draw.rect(screen, (0, 0, 0), (player.player_rect.x - camera_x, player.player_rect.y, player.player_rect.width, player.player_rect.height), 2)
     _web_swing()
     grapple()
-    if player.web_active:
-        pygame.draw.line(screen,"white",(player.player_rect.centerx - camera_x, player.player_rect.centery - camera_y),(player.web_end[0] - camera_x, player.web_end[1]),3)
+    if player.web_active and player.web_end:
+     pygame.draw.line(
+        screen, "white",
+        (player.player_rect.centerx - camera_x, player.player_rect.centery - camera_y),
+        (player.web_end[0] - camera_x, player.web_end[1]),
+        3
+     )
 
    
     for enemy in enemies:

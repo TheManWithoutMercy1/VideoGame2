@@ -3,25 +3,25 @@
 tile_map_lvl2 = [
     [0]*100 for _ in range(10)
 ] + [
-    [0]*25 + [1]*10 + [0]*65,               # left platform
-    [0]*60 + [1]*10 + [0]*30,               # right platform
-    [0]*40 + [1]*5 + [0]*55,                # center floating platform
-    [0]*10 + [1]*5 + [0]*85,                # far left block
-    [0]*85 + [1]*5 + [0]*10,                # far right block
-    [0]*45 + [1] + [0]*54,                  # center pillar
-    [0]*45 + [1] + [0]*54,
-    [0]*45 + [1] + [0]*54,
-    [0]*45 + [1] + [0]*54,
-    [0]*20 + [1]*5 + [0]*75,                # floating platform
-    [0]*70 + [1]*5 + [0]*25,                # floating platform
-    [0]*10 + [1]*10 + [0]*80,               # cave entrance
-    [0]*10 + [1] + [0]*89,                  # cave wall
-    [0]*10 + [1] + [0]*89,
-    [0]*10 + [1]*10 + [0]*80,               # cave exit
-    [0]*50 + [1] + [0]*49,                  # climbable block
-    [0]*50 + [1] + [0]*49,
-    [0]*50 + [1]*10 + [0]*40,               # ledge
-    [0]*90 + [1]*10,                        # right-side ledge
+    [0]*25 + [0]*10 + [0]*65,               # left platform
+    [0]*60 + [0]*10 + [0]*30,               # right platform
+    [0]*40 + [0]*5 + [0]*55,                # center floating platform
+    [0]*10 + [0]*5 + [0]*85,                # far left block
+    [0]*85 + [0]*5 + [0]*10,                # far right block
+    [0]*45 + [0] + [0]*54,                  # center pillar
+    [0]*45 + [0] + [0]*54,
+    [0]*45 + [0] + [0]*54,
+    [0]*45 + [0] + [0]*54,
+    [0]*20 + [0]*5 + [0]*75,                # floating platform
+    [0]*70 + [0]*5 + [0]*25,                # floating platform
+    [0]*10 + [0]*10 + [0]*80,               # cave entrance
+    [0]*10 + [0] + [0]*89,                  # cave wall
+    [0]*10 + [0] + [0]*89,
+    [0]*10 + [0]*10 + [0]*80,               # cave exit
+    [0]*50 + [0] + [0]*49,                  # climbable block
+    [0]*50 + [0] + [0]*49,
+    [0]*50 + [0]*10 + [0]*40,               # ledge
+    [0]*90 + [0]*10,                        # right-side ledge
     [0]*100,
     [0]*100,
     [0]*100,
@@ -52,3 +52,21 @@ tile_map_lvl2 = [
     [1]*100,
     [1]*1000                                
 ]
+
+
+tile_map_lvl3 = [
+    [0]*100 for _ in range(10)
+] + [
+   # [0]*10 + [1]*10 + [0]*80,               # top-left platform
+    [0]*60 + [1]*10 + [0]*30,               # top-right platform
+    [0]*30 + [1]*5 + [0]*65,                # mid-air floating
+    [0]*45 + [1]*10 + [0]*45,               # center platform
+    [0]*5 + [1] + [0]*94,                   # small lone block
+    [0]*20 + [1]*3 + [0]*77,                # tiny platform
+    [0]*70 + [1]*10 + [0]*20,               # right side
+    [0]*50 + [1] + [0]*49,                  # vertical support
+    [0]*50 + [1] + [0]*49,
+    [0]*10 + [1]*15 + [0]*75,               # lower platform
+    [0]*80 + [1]*10 + [0]*10,               # bottom right ledge
+] + [[0]*100 for _ in range(25)] + [[1]*100 for _ in range(5)]
+
