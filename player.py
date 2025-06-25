@@ -6,8 +6,8 @@ GRAVITY = 3
 WHITE = (255, 255, 255)
 
 #web_sound = pygame.mixer.Sound('Voicy_Spider-Man web shoot sound effect.mp3')
-#jump_sound = pygame.mixer.Sound('jump_05.wav')
-#punch_sound = pygame.mixer.Sound('hard-punch-90179.mp3')
+jump_sound = pygame.mixer.Sound('jump_05.wav')
+punch_sound = pygame.mixer.Sound('hard-punch-90179.mp3')
 
 class Player(Sprite):
     #constructor
@@ -20,6 +20,8 @@ class Player(Sprite):
         self.attack3_image = pygame.image.load("images/Sprites/punch3.png")
         self.shooter_image = pygame.image.load("images/Sprites/shoot_sprite.png")
         self.spider_hurt = pygame.image.load("images/Sprites/spider_hurt.png")
+        self.grab = pygame.image.load("images/Sprites/grab.png")
+        self.spider_grab = pygame.transform.scale(self.grab,(100,100))
         self.spider_hurt_resized = pygame.transform.scale(self.spider_hurt,(100,100))
         self.air_kick_image = pygame.image.load("images/Sprites/airkick.png")
         health_image = pygame.image.load("images/Sprites/health_bar_img.png")
@@ -134,6 +136,7 @@ class Player(Sprite):
         self.web_end = None
         self.rush = False
         self.hurt = False
+        self.grab = False
        # self.idle = True
 
     def _update_movement(self, rects):
@@ -226,7 +229,7 @@ class Player(Sprite):
         else:
             self.running = False
         if key[pygame.K_d] and not self.attacking:
-            #punch_sound.play()
+            punch_sound.play()
             self.running = False
             self.attack_count += 1
             print(f"attack count is {self.attack_count}")
@@ -241,10 +244,16 @@ class Player(Sprite):
             self.idle = False
 
         if key[pygame.K_SPACE]:
-            #jump_sound.play()
+            jump_sound.play()
             print("jump pressed!")#
             self.jumping_start_time = pygame.time.get_ticks()
-            self.jumping = True   
+            self.jumping = True  
+
+        if key[pygame.K_g]:
+            print("grab")
+            self.grab = True 
+            self.grab_start_time = pygame.time.get_ticks()
+
 
         if self.jumping:
             if not self.swinging:
@@ -254,8 +263,15 @@ class Player(Sprite):
                 self.jumping = False
             if self.swinging:
                 self.vely = 0
+
+        if self.grab:
+            self.resized_image = self.spider_grab
+            if pygame.time.get_ticks() - self.grab_start_time > 1000:
+                self.grab = False
+
         if self.uppercut:
             self.resized_image = self.resized_uppercut
+     
             
         if self.facing_left and self.idle:
             self.resized_image = self.resized_image2
@@ -309,6 +325,25 @@ class Player(Sprite):
                 self.resized_image = self.resized_run_image11
             if self.run_count >= 80:
                 self.run_count = 0
+         elif self.facing_left:
+                if self.run_count >= 0:
+                    self.resized_image = self.resized_run_image4_flipped
+                if self.run_count >= 10:
+                    self.resized_image = self.resized_run_image5_flipped
+                if self.run_count >= 20:
+                    self.resized_image = self.resized_run_image6_flipped
+                if self.run_count >= 30:
+                    self.resized_image = self.resized_run_image7_flipped
+                if self.run_count >= 40:
+                    self.resized_image = self.resized_run_image8_flipped
+                if self.run_count >= 50:
+                    self.resized_image = self.resized_run_image9_flipped
+                if self.run_count >= 60:
+                    self.resized_image = self.resized_run_image10_flipped
+                if self.run_count >= 70:
+                    self.resized_image = self.resized_run_image11_flipped
+                if self.run_count >= 80:
+                    self.run_count = 0
 
         # Only show hurt sprite if not attacking, jumping, running, swinging, etc.
         if self.hurt and not (self.attacking or self.jumping or self.running or self.swinging or self.shooting or self.uppercut):

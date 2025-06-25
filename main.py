@@ -7,12 +7,13 @@ from Enemies import Enemy
 from destructibles import Destructible
 from camera_lock import CameraLock  # Import camera system
 from csv_converted import convert_csv
-from layout import tile_map_lvl2, tile_map_lvl3
-from city_textures import road_image_resized
+from layout import tile_map_lvl2, tile_map_lvl3, tile_map_ny
+from city_textures import*
 from spiderslayer import Spiderslayer
 tile_image = pygame.image.load("images/Sprites/Level Design/Ground.png")
 health_image = pygame.image.load("images/Sprites/health_bar_img.png")
 health_image_r = pygame.transform.scale(health_image,(140,75))
+background_image = pygame.image.load("images/Sprites/citybackground.png")
 
 tile_size = 10
 WHITE = (255, 255, 255)
@@ -48,19 +49,23 @@ tile_map = [
     [0]*100,
     [0]*100,
     [0]*100,
-
     [0]*100,
     [0]*100,
     [0]*100,
     [0]*100,
-
     [0]*100,
     [0]*100,
-
     [0]*100,
     [0]*100,
-
-    [1]*1000                                 # solid ground
+    [1]*1000, 
+    [0]*1000,
+    [0]*1000,
+    [0]*1000,
+    [2]*1000,
+    [2]*1000,
+    [2]*1000,
+    [2]*1000,
+    [2]*1000                                           # solid ground
 ]
 
 pygame.init()
@@ -69,11 +74,13 @@ clock = pygame.time.Clock()
 running = True
 color = (255,0,0)
 player = Player(screen,350,480)
-spiderslayer = Spiderslayer(350,200)
+bullet_group = pygame.sprite.Group()
+#spiderslayer = Spiderslayer(350,200)
 #enemy = Enemy(500,600)
 #enemy2 = Enemy(800,600)
 #enemy3 = Enemy(1200,600)
 enemies = pygame.sprite.Group()
+slayers = pygame.sprite.Group()
 #enemies.add(enemy)
 #enemies.add(enemy2)
 #enemies.add(enemy3)
@@ -98,7 +105,7 @@ level_complete = False
 level_complete_time = 0
 
 current_level = 0
-tile_maps = [tile_map, tile_map_lvl2, tile_map_lvl3]
+tile_maps = [tile_map_ny, tile_map, tile_map_lvl2]
 tile_map = tile_maps[current_level]  # Initialize with the first level
 message_timer = 0
 message_duration = 3000  # 3 seconds
@@ -121,17 +128,17 @@ def _enemies_defeated():
         else:
             print("NO MORE LEVELS!")
 
-
 def _enemy_spawn(tile_map):
     global enemies
     global slayers 
     enemies.empty()
+    slayers.empty()
     if tile_map and isinstance(tile_map[0], list):
-        enemy1 = Enemy(500, 600)
-        enemy2 = Enemy(800, 600)
-        enemy3 = Enemy(1200, 600)
-        enemies.add(enemy1, enemy2, enemy3)
-        print("Enemies spawned.")
+        enemy1 = Enemy(550, 200)
+        spiderslayer = Spiderslayer(350, 200,bullet_group=bullet_group)
+        enemies.add(enemy1)
+        slayers.add(spiderslayer)
+        #print("Enemies and Spiderslayer spawned.")
     
      
 def _draw_collisions(tile_map):
@@ -139,15 +146,18 @@ def _draw_collisions(tile_map):
     rects.clear()  # Clear previous rects to avoid duplication
     for row_index, row in enumerate(tile_map):
         for col_index, tile in enumerate(row):
-            if tile == 1:  # If tile is solid (collision)
+            if tile > 0:  # If tile is solid (collision)
                 x = col_index * tile_size  # Store world position (no camera offset)
                 y = row_index * tile_size
                 rect = pygame.Rect(x, y, 40, 40)  # Store world position in rects
-                screen.blit(road_image_resized,( rect.x - camera_x, rect.y))
+                if tile == 1:
+                   screen.blit(road_image_resized,( rect.x - camera_x, rect.y))
+                if tile == 2:
+                   screen.blit(ground_image_resized,( rect.x - camera_x, rect.y))
                 rects.append(rect)  # Store for collision detection        
                 # Apply camera offset when drawing
-                pygame.draw.rect(screen, color, 
-                                 (rect.x - camera_x, rect.y - camera_y, rect.width, rect.height), 2)
+                #pygame.draw.rect(screen, color, 
+                                # (rect.x - camera_x, rect.y - camera_y, rect.width, rect.height), 2)
 def _enemy_collisions():
     for enemy in enemies:
      if player.player_rect.colliderect(enemy.detect_player): 
@@ -164,7 +174,12 @@ def _enemy_collisions():
         if enemy.attacking:
           print("enemy attacking")
           player.player_hurt()
-
+    for s in slayers:
+        if player.player_rect.colliderect(s.rect):
+           if player.attacking:
+              print("collision detected!")
+              s.hurt()
+           
 def _web_swing():
     if player.swinging and player.jumping:
         pygame.draw.line(screen, WHITE, (player.rect.x - camera_x, player.rect.y - camera_y), (player.rect.x - camera_x + 3,50), 3)
@@ -213,21 +228,28 @@ while running:
     # Move the player after camera has updated
     player._update_movement(rects)
     
- 
     for enemy in enemies:
       enemy._update_movements(rects)
       enemy._update_sprites()
 
-    spiderslayer.move()
-    screen.fill("lightblue")  # Clear screen
+    for bullet in bullet_group:
+       bullet.update()
+  
+    #screen.fill("lightblue")  # Clear screen
+    screen.blit(background_image, (0, 0))
 
     create_map(screen, tile_map, tile_image, tile_size)  # Draw world
 
     screen.blit(player.resized_image, (player.rect.x - camera_x, player.rect.y))
-    screen.blit(spiderslayer.image, (spiderslayer.rect.x - camera_x, spiderslayer.rect.y))
+    #screen.blit(spiderslayer.image, (spiderslayer.rect.x - camera_x, spiderslayer.rect.y))
     for enemy in enemies:
       #print("ENEMY CREATED!")
       screen.blit(enemy.resized_enemy_image, (enemy.rect.x - camera_x, enemy.rect.y))
+    for s in slayers:
+      screen.blit(s.image, (s.rect.x - camera_x, s.rect.y))
+    for bullet in bullet_group:
+      screen.blit(bullet.image, (bullet.rect.x - camera_x, bullet.rect.y - camera_y))
+
     
 
     d.draw(camera_x)
@@ -254,6 +276,12 @@ while running:
    
     for enemy in enemies:
       enemy._check_health()
+
+    for s in slayers:
+       s.moving()
+       s._check_health()
+
+    
       
     _enemies_defeated()
 

@@ -39,6 +39,17 @@ class Enemy(pygame.sprite.Sprite):
          self.rect.x += self.velx
          self.Enemy_rect.x += self.velx
          self.detect_player.x += self.velx
+
+    def _yanked_left_web(self):
+         self.rect.x -= self.velx 
+         self.Enemy_rect.x -= self.velx
+         self.detect_player.x -= self.velx
+
+    def _yanked_right_web(self):
+         self.rect.x += self.velx
+         self.Enemy_rect.x += self.velx
+         self.detect_player.x += self.velx
+         
     def _move_mode(self):
       if not self.launched:
         if random.random() < 0.5 and not self.guarding: 
