@@ -2,6 +2,7 @@ import pygame
 from player import Player
 import random
 from camera import Camera
+from venom_boss import Venom
 from NewYork import create_map
 from Enemies import Enemy
 from destructibles import Destructible
@@ -81,6 +82,8 @@ bullet_group = pygame.sprite.Group()
 #enemy3 = Enemy(1200,600)
 enemies = pygame.sprite.Group()
 slayers = pygame.sprite.Group()
+enemy_bosses = pygame.sprite.Group()
+
 #enemies.add(enemy)
 #enemies.add(enemy2)
 #enemies.add(enemy3)
@@ -99,13 +102,12 @@ rects = []
 camera_lock = CameraLock(400, 800)
 camera_x = 0
 camera_y = 0
-
 BLACK = (0,0,0)
 level_complete = False
 level_complete_time = 0
 
 current_level = 0
-tile_maps = [tile_map_ny, tile_map, tile_map_lvl2]
+tile_maps = [tile_map_ny, tile_map, tile_map_lvl2, tile_map]
 tile_map = tile_maps[current_level]  # Initialize with the first level
 message_timer = 0
 message_duration = 3000  # 3 seconds
@@ -117,29 +119,37 @@ def _draw_health_bar():
 
 def _enemies_defeated():
     global tile_map, current_level, enemies
-    if len(enemies) < 1:
+    total = len(enemies) + len(slayers)
+    if total < 1:
         print("ALL ENEMIES DEFEATED!!!")
-        blit_time = pygame.time.get_ticks()
-        screen.blit(text, textRect)
+        #blit_time = pygame.time.get_ticks()
+        #screen.blit(text, textRect)
         if current_level + 1 < len(tile_maps):
             current_level += 1
             tile_map = tile_maps[current_level]  
             _enemy_spawn(tile_map)   
         else:
             print("NO MORE LEVELS!")
-
+            
 def _enemy_spawn(tile_map):
-    global enemies
-    global slayers 
+    global enemies, slayers
     enemies.empty()
     slayers.empty()
-    if tile_map and isinstance(tile_map[0], list):
-        enemy1 = Enemy(550, 200)
-        spiderslayer = Spiderslayer(350, 200,bullet_group=bullet_group)
-        enemies.add(enemy1)
-        slayers.add(spiderslayer)
-        #print("Enemies and Spiderslayer spawned.")
-    
+    enemy_bosses.empty()
+    if current_level == 0:
+        enemies.add(Enemy(400, 400))
+    elif current_level == 1:
+        enemies.add(Enemy(300, 300))
+    elif current_level == 2:
+        enemies.add(Enemy(200, 300))
+        enemies.add(Enemy(400, 300))
+        enemies.add(Enemy(600, 300))
+        slayers.add(Spiderslayer(500, 150, bullet_group))
+        slayers.add(Spiderslayer(700, 150, bullet_group))
+    elif current_level == 3:
+        enemy_bosses.add(Venom(600,365))
+       
+
      
 def _draw_collisions(tile_map):
     global rects  
@@ -179,10 +189,13 @@ def _enemy_collisions():
            if player.attacking:
               print("collision detected!")
               s.hurt()
+    
+
+            
            
 def _web_swing():
     if player.swinging and player.jumping:
-        pygame.draw.line(screen, WHITE, (player.rect.x - camera_x, player.rect.y - camera_y), (player.rect.x - camera_x + 3,50), 3)
+        pygame.draw.line(screen, WHITE, (player.rect.x - camera_x, player.rect.y - camera_y), (player.rect.x - camera_x + 3,85), 3)
         #player.vely += 1.5  # Apply gravity while swinging 
         # 
 def grapple():
@@ -249,6 +262,16 @@ while running:
       screen.blit(s.image, (s.rect.x - camera_x, s.rect.y))
     for bullet in bullet_group:
       screen.blit(bullet.image, (bullet.rect.x - camera_x, bullet.rect.y - camera_y))
+    for boss in enemy_bosses:
+      boss.update(player.rect)
+      screen.blit(boss.image, (boss.rect.x - camera_x, boss.rect.y - camera_y))
+
+    for bullet in bullet_group:
+      if bullet.rect.colliderect(player.rect):
+        print("Player hit by Spiderslayer's bullet!")
+        player.player_hurt()  # Make sure this method exists and reduces health
+        bullet.kill()  # Remove bullet on hit
+
 
     
 
